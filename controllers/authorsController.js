@@ -1,21 +1,14 @@
 const express = require("express");
-const { Pool } = require("pg");
-
-const pool = new Pool({
-  user: "postgres",
-  password: "",
-  host: "localhost",
-  port: 5432,
-  database: "library",
-});
+const db = require("../database");
 
 const getAllAuthors = async (req, res, next) => {
   try {
-    const client = await pool.connect();
-    const result = await client.query("SELECT * FROM authors");
-    client.release();
-
-    res.json(result.rows);
+    const result = await db.query("SELECT * FROM authors");
+    const updatedAuthors = result.rows.map((row) => {
+      row.gender = row.gender == 0 ? "Kadın" : "Erkek";
+      return row;
+    });
+    res.status(200).json(updatedAuthors);
   } catch (err) {
     console.error("veri çekme hatası :" + err);
     res.status(500).json({
@@ -26,13 +19,14 @@ const getAllAuthors = async (req, res, next) => {
 
 const getAuthorById = async (req, res, next) => {
   try {
-    const client = await pool.connect();
-    const { id } = req.params;
-    const result = await pool.query(
+    const result = await db.query(
       "SELECT * FROM authors WHERE id = '" + id + "'"
     );
-    client.release();
-    res.status(200).json(result.rows);
+    const updatedAuthors = result.rows.map((row) => {
+      row.gender = row.gender == 0 ? "Kadın" : "Erkek";
+      return row;
+    });
+    res.status(200).json(updatedAuthors);
   } catch (err) {
     console.error("ilgili kullanıcıya erişirken bir hata oluştu. : ", err);
     res.status(500).json({
@@ -43,14 +37,15 @@ const getAuthorById = async (req, res, next) => {
 
 const createAuthors = async (req, res, next) => {
   try {
-    const client = await pool.connect();
     const { firstName, lastName, gender } = req.body;
-    const result = await client.query(
-      "INSERT INTO authors (firstname, lastname, gender) VALUES ($1, $2, $3)",
+    const result = await db.query(
+      "INSERT INTO authors (firstname, lastname, gender) VALUES ($1, $2, $3) RETURNING id, firstname, lastname, gender",
       [firstName, lastName, gender]
     );
-    client.release();
-    res.status(200).json({ result: "success", affected_rows: result.rowCount });
+
+    const createdAuthor = result.rows[0];
+    console.log(createdAuthor);
+    res.status(200).json({ createdAuthor });
   } catch (err) {
     console.error("yazar oluşturulurken bir hata oluştu.", err);
     res.status(500).json({
@@ -61,14 +56,13 @@ const createAuthors = async (req, res, next) => {
 
 const updateAuthors = async (req, res, next) => {
   try {
-    const client = await pool.connect();
     const { id } = req.params;
     const { firstName, lastName, gender } = req.body;
-    const result = await client.query(
-      "UPDATE authors SET firstname = $1, lastname = $2, gender = $3 WHERE id = $4",
+    const result = await db.query(
+      "UPDATE authors SET firstname = $1, lastname = $2, gender = $3 WHERE id = $4 RETURNING id, firstname, lastname, gender",
       [firstName, lastName, gender, id]
     );
-    res.status(200).json(result.rowCount);
+    res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error("yazar güncelleme işlemi sırasında bir sorun oluştu. :", err);
     res.status(500).json({
@@ -79,13 +73,9 @@ const updateAuthors = async (req, res, next) => {
 
 const deleteAuthors = async (req, res, next) => {
   try {
-    const client = await pool.connect();
     const { id } = req.params;
-    const result = await client.query("DELETE FROM authors WHERE id = $1", [
-      id,
-    ]);
-    client.release();
-    res.status(200).json({ result: "success", affected_rows: result });
+    const result = await db.query("DELETE FROM authors WHERE id = $1", [id]);
+    res.status(200).json({ result: "success", affected_rows: result.row });
   } catch (err) {
     console.error("yazar silinirken bir hata oluştu.", err);
     res.status(500).json({ error: "yazar silinirken hata oluştu." });
