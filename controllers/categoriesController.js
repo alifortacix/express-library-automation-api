@@ -8,11 +8,11 @@ const getAllCategories = async (req, res, next) => {
     if (result.rows.length > 0) {
       res.status(200).json(result.rows);
     } else {
-      res.status(200).json({ message: "No categories found" });
+      res.status(200).json({ message: "Hiç kategori bulunamadı." });
     }
   } catch (err) {
     console.error(
-      "Kategoriler listelenirken beklenmeyen bir hata oluştu. : ",
+      "Kategoriler listelenirken beklenmeyen bir hata oluştu. Hata mesajı: ",
       err.message
     );
     res.status(500).json({ message: err.message });
@@ -30,10 +30,12 @@ const getCategory = async (req, res, next) => {
     }
   } catch (err) {
     console.error(
-      "Kategori çekilirken beklenmeyen bir hata oluştu. :",
+      "Kategori verileri listelenirken beklenmedik bir hata oluştu. Hata mesajı :",
       err.message
     );
-    res.status(500).json({ message: err.message });
+    res
+      .status(500)
+      .json({ message: "Kategori verileri listelenirken bir hata oluştu." });
   }
 };
 
@@ -51,10 +53,7 @@ const createCategory = async (req, res, newt) => {
       res.status(500).json({ message: "Kategori oluşturulurken hata oluştu." });
     }
   } catch (err) {
-    console.error(
-      "Kategori eklenirken bir hata ile karşılaşıldı. : ",
-      err.message
-    );
+    console.error("Kategori eklenirken bir hata oluştu. : ", err.message);
     res.status(500).send(err.message);
   }
 };
@@ -66,7 +65,7 @@ const updateCategory = async (req, res, next) => {
     const result = await db.query(query, [
       req.body.categoryName,
       req.body.categoryDescription,
-      req.body.id,
+      req.params.id,
     ]);
     if (result.rowCount > 0) {
       res.status(200).json(result.rows[0]);
@@ -82,7 +81,8 @@ const updateCategory = async (req, res, next) => {
 
 const deleteCategory = async (req, res, next) => {
   try {
-    const query = "DELETE FROM categories WHERE id = ' " + req.body.id + " ' ";
+    const query =
+      "DELETE FROM categories WHERE id = ' " + req.params.id + " ' ";
     const result = db.query(query);
     res.status(200).json({ message: `${req.body.id} ID li kategori silindi.` });
   } catch (err) {

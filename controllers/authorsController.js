@@ -10,14 +10,17 @@ const getAllAuthors = async (req, res, next) => {
     });
     res.status(200).json(updatedAuthors);
   } catch (err) {
-    console.error("veri çekme hatası :" + err);
+    console.error(
+      "Yazarların listesini alırken beklenmedik bir hata oluştu. Hata mesajı :" +
+        err
+    );
     res.status(500).json({
-      error: "veri çekerken beklenmeyen bir hata oluştu.",
+      error: "Yazarların listesini alırken beklenmedik bir hata oluştu.",
     });
   }
 };
 
-const getAuthorById = async (req, res, next) => {
+const getAuthor = async (req, res, next) => {
   try {
     const result = await db.query(
       "SELECT * FROM authors WHERE id = '" + id + "'"
@@ -28,14 +31,17 @@ const getAuthorById = async (req, res, next) => {
     });
     res.status(200).json(updatedAuthors);
   } catch (err) {
-    console.error("ilgili kullanıcıya erişirken bir hata oluştu. : ", err);
+    console.error(
+      `${req.params.id}'ye sahip yazarın bilgilerini listelerken bir sorun oluştu.`,
+      err.message
+    );
     res.status(500).json({
-      error: "ilgili kullanıcıyı sorgulerken bir hata oluştu.",
+      error: `${req.params.id}'ye sahip yazarın bilgilerini listelerken bir sorun oluştu.`,
     });
   }
 };
 
-const createAuthors = async (req, res, next) => {
+const createAuthor = async (req, res, next) => {
   try {
     const { firstName, lastName, gender } = req.body;
     const result = await db.query(
@@ -47,14 +53,17 @@ const createAuthors = async (req, res, next) => {
     console.log(createdAuthor);
     res.status(200).json({ createdAuthor });
   } catch (err) {
-    console.error("yazar oluşturulurken bir hata oluştu.", err);
+    console.error(
+      "Yazar veritabanına eklenirken beklenmedik bir hata oluştu. Hata mesajı :",
+      err.message
+    );
     res.status(500).json({
-      error: "yazar oluşturulurken beklenmedik bir hata oluştu",
+      error: "Yazar veritabanına eklenirken beklenmedik bir hata oluştu.",
     });
   }
 };
 
-const updateAuthors = async (req, res, next) => {
+const updateAuthor = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { firstName, lastName, gender } = req.body;
@@ -64,28 +73,36 @@ const updateAuthors = async (req, res, next) => {
     );
     res.status(200).json(result.rows[0]);
   } catch (err) {
-    console.error("yazar güncelleme işlemi sırasında bir sorun oluştu. :", err);
+    console.error(
+      "İlgili yazarı güncelleme işlemi sırasında bir hata oluştu. Hata mesajı : ",
+      err
+    );
     res.status(500).json({
-      error: "Yazar güncelleme işlemi sırasında bir hata oluştu.",
+      error: "İlgili yazarı güncelleme işlemi sırasında bir hata oluştu.",
     });
   }
 };
 
-const deleteAuthors = async (req, res, next) => {
+const deleteAuthor = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await db.query("DELETE FROM authors WHERE id = $1", [id]);
     res.status(200).json({ result: "success", affected_rows: result.row });
   } catch (err) {
-    console.error("yazar silinirken bir hata oluştu.", err);
-    res.status(500).json({ error: "yazar silinirken hata oluştu." });
+    console.error(
+      "Yazar veritabanından silinirken bir hata oluştu. Hata mesajı : ",
+      err
+    );
+    res
+      .status(500)
+      .json({ error: "Yazar veritabanından silinirken bir hata oluştu." });
   }
 };
 
 module.exports = {
   getAllAuthors,
-  getAuthorById,
-  createAuthors,
-  updateAuthors,
-  deleteAuthors,
+  getAuthor,
+  createAuthor,
+  updateAuthor,
+  deleteAuthor,
 };

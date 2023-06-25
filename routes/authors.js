@@ -5,12 +5,12 @@ const authorsController = require("../controllers/authorsController");
 
 router.get("/", authorsController.getAllAuthors);
 
-router.get("/:id", authorsController.getAuthorById);
+router.get("/:id", authorsController.getAuthor);
 
-router.post("/", authorsController.createAuthors);
+router.post("/", authorsController.createAuthor);
 
-router.patch("/:id", authorsController.updateAuthors);
+router.patch("/:id", authorsController.updateAuthor);
 
-router.delete("/:id", authorsController.deleteAuthors);
+router.delete("/:id", authorsController.deleteAuthor);
 
 module.exports = router;
